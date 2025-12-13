@@ -213,6 +213,7 @@ Use Framer Motion for animations, Tailwind for styling.
 
 **Total Project:** ~40% Kiro-generated code
 
+
 ---
 
 ## 🔗 Related Documentation

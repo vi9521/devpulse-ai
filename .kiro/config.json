@@ -1,4 +1,6 @@
-
+cd devpulse-ai
+mkdir -p .kiro
+cat > .kiro/config.json << 'EOF'
 {
   "project": "DevPulse",
   "version": "1.0.0",

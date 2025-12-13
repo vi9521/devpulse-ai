@@ -2,53 +2,76 @@ import SentimentCard from "./SentimentCard";
 import TrendChart from "./TrendChart";
 import InsightPanel from "./InsightPanel";
 import PredictionEngine from "./PredictionEngine";
-import ComparisonTool from "./ComparisonTool";
+import { useDashboard } from "../hooks/useDashboard";
 
 export default function Dashboard() {
-  const sampleTrend = [
-    { date: "Mon", score: 60 },
-    { date: "Tue", score: 64 },
-    { date: "Wed", score: 68 },
-    { date: "Thu", score: 72 },
-    { date: "Fri", score: 71 },
-  ];
+  const { sentiment, insights, loading, error, refresh } =
+    useDashboard("react");
 
-  const insights = [
-    "React shows rising positive sentiment this week.",
-    "Python discussions increased 17% in engagement.",
-    "StackOverflow activity shows fewer bug reports.",
-  ];
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-gray-300">
+        <p className="text-lg font-medium">
+          ⏳ Fetching live developer data
+        </p>
+        <p className="text-sm mt-2">
+          First load may take a minute (real ML + APIs)
+        </p>
+      </div>
+    );
+  }
 
-  const prediction = {
-    direction: "up",
-    confidence: 87,
-  };
+  if (error || !sentiment) {
+    return (
+      <p className="text-center text-red-400">
+        {error ?? "Failed to load dashboard data."}
+      </p>
+    );
+  }
 
-  const comparisonData = [
-    { tech: "React", score: 72 },
-    { tech: "Vue", score: 65 },
-    { tech: "Angular", score: 59 },
-    { tech: "Django", score: 76 },
-    { tech: "Flask", score: 68 },
-  ];
+  const dist = sentiment.current_sentiment.distribution;
+  const pct = (v: number) => Math.round(v * 100);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <SentimentCard label="Positive Sentiment" value={72} />
-      <SentimentCard label="Negative Sentiment" value={18} />
-      <SentimentCard label="Frustration Level" value={10} />
-
-      <div className="md:col-span-2">
-        <TrendChart data={sampleTrend} />
+    <>
+      {/* 🔄 Refresh */}
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={refresh}
+          className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-medium"
+        >
+          🔄 Refresh Live Data
+        </button>
       </div>
 
-      <InsightPanel insights={insights} />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <SentimentCard label="Positive Sentiment" value={pct(dist.POSITIVE ?? 0)} />
+        <SentimentCard label="Negative Sentiment" value={pct(dist.NEGATIVE ?? 0)} />
+        <SentimentCard
+          label="Frustration Level"
+          value={pct(dist.FRUSTRATED ?? 0)}
+        />
 
-      <PredictionEngine prediction={prediction} />
+        <div className="md:col-span-2">
+          <TrendChart
+            data={sentiment.historical_data.map((d: any) => ({
+              date: d.date,
+              score: d.sentiment_score,
+            }))}
+          />
+        </div>
 
-      <div className="md:col-span-3">
-        <ComparisonTool data={comparisonData} />
+        <InsightPanel insights={insights.map((i: any) => i.description)} />
+
+        <PredictionEngine
+          prediction={{
+            direction: sentiment.predictions.trend_direction || "none",
+            confidence: Math.round(
+              sentiment.predictions.trend_strength || 0
+            ),
+          }}
+        />
       </div>
-    </div>
+    </>
   );
 }
