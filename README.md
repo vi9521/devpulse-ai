@@ -248,42 +248,6 @@ MIT License - see [LICENSE](LICENSE)
 
 ---
 
-**Built with ❤️ for Kiro Week 3 Challenge**
-EOF
-```
+**Built  for Kiro Week 3 Challenge**
 
----
 
-### **Priority 4: Add Screenshots (2 hours)** 🔥
-
-#### **Step 1: Take Dashboard Screenshot**
-
-1. Open your dashboard: `http://localhost:5173`
-2. Take full screenshot
-3. Save as: `screenshots/dashboard.png`
-
-#### **Step 2: Take Kiro Screenshots**
-
-Open Kiro and ask these 4 prompts (take screenshot of EACH):
-
-**Prompt 1:**
-```
-Build a sentiment analyzer using DistilBERT for developer text classification
-```
-Save as: `screenshots/kiro-1-sentiment.png`
-
-**Prompt 2:**
-```
-Create Flask API endpoints for sentiment data with CORS and error handling
-```
-Save as: `screenshots/kiro-2-flask-api.png`
-
-**Prompt 3:**
-```
-Build React TypeScript components with Framer Motion and Tailwind CSS
-```
-Save as: `screenshots/kiro-3-react.png`
-
-**Prompt 4:**
-```
-Implement Facebook Prophet for time-series forecasting with predictions
