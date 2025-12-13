@@ -1,173 +1,78 @@
-"""
-DevPulse Sentiment Analyzer
-Production-safe version with ML fallback
-
-Local: Uses DistilBERT
-Production (Render): Uses lightweight rule-based fallback
-"""
-
-from typing import Dict, List
+import os
 import re
-
-# -----------------------------
-# SAFE IMPORTS (CRITICAL FIX)
-# -----------------------------
-try:
-    import torch
-    from transformers import pipeline
-    TORCH_AVAILABLE = True
-except Exception:
-    TORCH_AVAILABLE = False
-
+from typing import Dict, List
 
 class DevSentimentAnalyzer:
     """
-    Sentiment analyzer with graceful degradation.
-
-    - Local: Transformer-based ML
-    - Production: Rule-based heuristic
+    Production-safe sentiment analyzer.
+    ML model is lazy-loaded to avoid OOM on small instances.
     """
 
     def __init__(self):
+        self.model_name = "distilbert-base-uncased-finetuned-sst-2-english"
+        self.pipeline = None
+        self.ml_enabled = os.getenv("ENABLE_ML", "false").lower() == "true"
+
         print("Initializing DevSentimentAnalyzer...")
+        print(f"ML enabled: {self.ml_enabled}")
 
-        self.use_ml = TORCH_AVAILABLE
+    def _load_model(self):
+        """Load ML model lazily"""
+        if self.pipeline is not None:
+            return
 
-        if self.use_ml:
-            try:
-                self.device = 0 if torch.cuda.is_available() else -1
-                self.model_name = "distilbert-base-uncased-finetuned-sst-2-english"
+        if not self.ml_enabled:
+            raise RuntimeError("ML disabled by configuration")
 
-                print(f"Loading ML model: {self.model_name}")
-                print(f"Using device: {'GPU' if self.device == 0 else 'CPU'}")
+        try:
+            from transformers import pipeline
+            import torch
 
-                self.sentiment_pipeline = pipeline(
-                    "sentiment-analysis",
-                    model=self.model_name,
-                    device=self.device
-                )
+            device = -1  # force CPU
+            print("Loading ML model lazily...")
+            self.pipeline = pipeline(
+                "sentiment-analysis",
+                model=self.model_name,
+                device=device
+            )
+            print("✅ ML model loaded")
 
-                print("✅ ML Sentiment Analyzer loaded")
+        except Exception as e:
+            print(f"❌ ML load failed: {e}")
+            self.pipeline = None
+            raise
 
-            except Exception as e:
-                print("⚠️ ML load failed, switching to fallback:", e)
-                self.use_ml = False
-                self.sentiment_pipeline = None
-        else:
-            print("⚠️ Torch not available — using fallback mode")
-            self.sentiment_pipeline = None
-
-        # Developer-specific patterns (USED IN BOTH MODES)
-        self.frustration_keywords = [
-            "bug", "broken", "crash", "error", "failed", "doesn't work",
-            "garbage", "terrible", "useless", "worst", "wtf"
-        ]
-
-        self.positive_keywords = [
-            "love", "amazing", "awesome", "excellent",
-            "perfect", "great", "works", "helpful", "thanks"
-        ]
-
-        print("✅ Sentiment Analyzer ready (safe mode)")
-
-    # -----------------------------
-    # UTILS
-    # -----------------------------
     def preprocess_text(self, text: str) -> str:
-        if not text:
-            return ""
+        text = re.sub(r"http\S+", "", text)
+        text = re.sub(r"`[^`]*`", "", text)
+        return " ".join(text.split())[:256]
 
-        text = re.sub(r"http\S+|www\S+", "", text)
-        text = re.sub(r"`{1,3}.*?`{1,3}", "", text, flags=re.DOTALL)
-        return " ".join(text.split())[:512]
-
-    # -----------------------------
-    # CORE ANALYSIS
-    # -----------------------------
     def analyze(self, text: str) -> Dict:
         if not text or len(text.strip()) < 5:
-            return self._neutral("Text too short")
+            return {"label": "NEUTRAL", "score": 0.5}
 
         clean_text = self.preprocess_text(text)
 
-        if self.use_ml and self.sentiment_pipeline:
+        # 🔁 Try ML if enabled
+        if self.ml_enabled:
             try:
-                result = self.sentiment_pipeline(clean_text)[0]
-                label = result["label"]
-                score = float(result["score"])
-
+                self._load_model()
+                result = self.pipeline(clean_text)[0]
                 return {
-                    "label": label,
-                    "score": score,
-                    "confidence": "high",
-                    "mode": "ml"
+                    "label": result["label"],
+                    "score": result["score"],
+                    "source": "ml"
                 }
-            except Exception as e:
-                print("⚠️ ML inference failed:", e)
+            except Exception:
+                pass  # fallback below
 
-        # -----------------------------
-        # FALLBACK MODE (RENDER SAFE)
-        # -----------------------------
-        text_lower = text.lower()
+        # 🛟 RULE-BASED FALLBACK (always safe)
+        text_lower = clean_text.lower()
 
-        if any(word in text_lower for word in self.frustration_keywords):
-            return {
-                "label": "FRUSTRATED",
-                "score": 0.35,
-                "confidence": "medium",
-                "mode": "fallback"
-            }
+        if any(w in text_lower for w in ["bug", "broken", "crash", "wtf", "error"]):
+            return {"label": "NEGATIVE", "score": 0.85, "source": "rules"}
 
-        if any(word in text_lower for word in self.positive_keywords):
-            return {
-                "label": "POSITIVE",
-                "score": 0.85,
-                "confidence": "medium",
-                "mode": "fallback"
-            }
+        if any(w in text_lower for w in ["love", "great", "awesome", "thanks"]):
+            return {"label": "POSITIVE", "score": 0.85, "source": "rules"}
 
-        return self._neutral("No strong sentiment detected")
-
-    # -----------------------------
-    # BATCH
-    # -----------------------------
-    def batch_analyze(self, texts: List[str]) -> List[Dict]:
-        return [self.analyze(text) for text in texts]
-
-    # -----------------------------
-    # AGGREGATION
-    # -----------------------------
-    def aggregate_sentiment(self, results: List[Dict]) -> Dict:
-        if not results:
-            return {
-                "average_score": 0.5,
-                "sentiment_distribution": {},
-                "dominant_sentiment": "NEUTRAL"
-            }
-
-        total = len(results)
-        score_sum = sum(r["score"] for r in results)
-
-        label_counts = {}
-        for r in results:
-            label_counts[r["label"]] = label_counts.get(r["label"], 0) + 1
-
-        dominant = max(label_counts, key=label_counts.get)
-
-        return {
-            "average_score": score_sum / total,
-            "sentiment_distribution": {
-                k: v / total for k, v in label_counts.items()
-            },
-            "dominant_sentiment": dominant,
-            "total_analyzed": total
-        }
-
-    def _neutral(self, reason: str) -> Dict:
-        return {
-            "label": "NEUTRAL",
-            "score": 0.5,
-            "confidence": "low",
-            "reason": reason,
-            "mode": "fallback"
-        }
+        return {"label": "NEUTRAL", "score": 0.5, "source": "rules"}
