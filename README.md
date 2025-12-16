@@ -1,4 +1,4 @@
-cat > README.md << 'EOF'
+
 # 🧠 DevPulse - AI-Powered Developer Sentiment Intelligence Platform
 
 <p align="center">
@@ -249,5 +249,6 @@ MIT License - see [LICENSE](LICENSE)
 ---
 
 **Built  for Kiro Week 3 Challenge**
+
 
 
