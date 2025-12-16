@@ -1,5 +1,21 @@
+# Node / Frontend
 node_modules/
 frontend/node_modules/
 dist/
+
+# Python / Backend
+venv/
+backend/venv/
+__pycache__/
+*.pyc
+
+# Environment & Secrets
 .env
+.env.*
+
+# OS / Editor
 .DS_Store
+.vscode/
+
+# Project assets
+screenshots/
