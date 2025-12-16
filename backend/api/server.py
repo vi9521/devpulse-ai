@@ -174,10 +174,5 @@ def stats():
 
 # ---------- SERVER START ----------
 if __name__ == "__main__":
-    print("🚀 Running on http://localhost:5000")
-    app.run(
-        host="127.0.0.1",
-        port=5000,
-        debug=False,
-        use_reloader=False
-    )
+    print("🚀 DevPulse API starting...")
+    app.run(debug=False)
