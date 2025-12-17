@@ -1,9 +1,6 @@
 
 # 🧠 DevPulse - AI-Powered Developer Sentiment Intelligence Platform
 
-<p align="center">
-  <img src="./screenshots/dashboard.png" alt="DevPulse Dashboard" width="800"/>
-</p>
 
 > **Kiro Week 3 Challenge: The Data Weaver**  
 > Analyzing developer sentiment across technologies using AI/ML
@@ -200,16 +197,8 @@ See [.kiro/README-kiro.md](.kiro/README-kiro.md) for detailed documentation.
 
 ---
 
-## 📸 Screenshots
 
-### Dashboard
-![Dashboard](./screenshots/dashboard.png)
 
-### Sentiment Analysis
-![Sentiment](./screenshots/sentiment-card.png)
-
-### Predictions
-![Predictions](./screenshots/trend-chart.png)
 
 ---
 
@@ -249,6 +238,7 @@ MIT License - see [LICENSE](LICENSE)
 ---
 
 **Built  for Kiro Week 3 Challenge**
+
 
 
 
