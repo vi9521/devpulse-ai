@@ -53,12 +53,11 @@ export default function Dashboard() {
         />
 
         <div className="md:col-span-2">
-          <TrendChart
-            data={sentiment.historical_data.map((d: any) => ({
-              date: d.date,
-              score: d.sentiment_score,
-            }))}
-          />
+       <TrendChart
+  data={sentiment.historical_data}
+
+         />
+
         </div>
 
         <InsightPanel insights={insights.map((i: any) => i.description)} />
