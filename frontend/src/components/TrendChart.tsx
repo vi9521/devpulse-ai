@@ -9,7 +9,7 @@ import {
 } from "recharts";
 
 interface Props {
-  data: { date: string; score: number }[];
+  data: { date: string; sentiment_score: number }[];
 }
 
 export default function TrendChart({ data }: Props) {
@@ -23,7 +23,12 @@ export default function TrendChart({ data }: Props) {
           <XAxis dataKey="date" stroke="#ccc" />
           <YAxis stroke="#ccc" />
           <Tooltip />
-          <Line type="monotone" dataKey="score" stroke="#4ADE80" strokeWidth={2} />
+          <Line
+            type="monotone"
+            dataKey="sentiment_score"
+            stroke="#4ADE80"
+            strokeWidth={2}
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>
