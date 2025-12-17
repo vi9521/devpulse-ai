@@ -19,10 +19,10 @@ DevPulse is an **AI-powered intelligence platform** that analyzes developer sent
 2. **Stack Overflow Questions** - Community questions, frustrations, solutions
 
 Using **advanced ML models** (DistilBERT + Prophet), DevPulse reveals:
-- ✅ Real-time sentiment trends across technologies
-- ✅ 7-day predictions with 78% confidence intervals
-- ✅ AI-generated insights for technical leaders
-- ✅ Technology comparison and recommendations
+-  Real-time sentiment trends across technologies
+-  7-day predictions with 78% confidence intervals
+-  AI-generated insights for technical leaders
+-  Technology comparison and recommendations
 
 ---
 
@@ -238,6 +238,7 @@ MIT License - see [LICENSE](LICENSE)
 ---
 
 **Built  for Kiro Week 3 Challenge**
+
 
 
 
