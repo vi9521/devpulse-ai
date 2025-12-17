@@ -6,7 +6,8 @@ import { useDashboard } from "../hooks/useDashboard";
 
 export default function Dashboard() {
   const { sentiment, insights, loading, error, refresh } =
-    useDashboard("react");
+    useDashboard("javascript");
+
 
   if (loading) {
     return (
@@ -54,8 +55,7 @@ export default function Dashboard() {
 
         <div className="md:col-span-2">
        <TrendChart
-  data={sentiment.historical_data}
-
+           data={sentiment.historical_data}
          />
 
         </div>
