@@ -16,7 +16,7 @@ export function useDashboard(technology: string) {
       const insightsRes = await getInsights(technology);
 
       setSentiment(sentimentRes);
-      setInsights(insightsRes.insights || []);
+     setInsights(Array.isArray(insightsRes) ? insightsRes : []);
     } catch (err) {
       console.error(err);
       setError("Failed to load dashboard data.");
